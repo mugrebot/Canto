@@ -128,3 +128,43 @@ We welcome contributions to Scaffold-Eth 2!
 
 Please see [CONTRIBUTING.MD](https://github.com/scaffold-eth/se-2/blob/master/CONTRIBUTING.md) for more information and guidelines for contributing to Scaffold-Eth 2.
 
+## Overview
+
+This Solidity code defines a smart contract called MyContract, which interacts with another smart contract called ITurnstile. The ITurnstile contract is an external contract that is defined by its interface, which specifies a set of functions that MyContract can call.
+
+The purpose of MyContract is to allow users to deposit tokens into the contract, and then withdraw those tokens to a specified address. The tokens are managed by ITurnstile, which keeps track of the balances of each token holder.
+
+## License
+
+This code is licensed under the MIT License, as indicated by the SPDX-License-Identifier tag at the top of the file.
+
+## Prerequisites
+
+This code requires Solidity version 0.8.19 to compile.
+
+## Functionality
+
+Error Handling
+This code defines several custom error types, which are thrown in certain situations:
+
+ZeroAddress: thrown when an address argument is zero.
+ZeroValue: thrown when a zero-value transaction is detected.
+NotContract: thrown when an address argument is not a contract.
+NoBalance: thrown when a user attempts to withdraw tokens from the contract but has no balance.
+WithdrawalFailed: thrown when a token withdrawal fails for some reason.
+## ITurnstile Interface
+MyContract interacts with ITurnstile through its interface, which defines the following functions:
+
+register: registers a new contract with the ITurnstile contract.
+getTokenId: returns the ID of a token associated with a specified contract address.
+balances: returns the balance of a specified token holder.
+balanceOf: returns the balance of the caller's token holdings.
+withdraw: withdraws tokens from the specified token holder's balance and transfers them to a specified recipient address.
+## MyContract Functions
+constructor: initializes the contract with a specified ITurnstile contract address. If the address is zero, the ZeroAddress error is thrown.
+getCsrAddress: returns the address of the ITurnstile contract.
+receive: receives Ether transactions and emits a PayContract event.
+myFunction: takes an address argument and checks if it is a contract. If not, the NotContract error is thrown. Otherwise, it calls ITurnstile.getTokenId to get the ID of the associated token, and then returns the balance of that token.
+viewTurnstile: returns the contract's token ID, token balance, and contract address.
+viewBalancio: returns the balance of the caller's token holdings.
+withdrawtoUser: takes a recipient address argument and withdraws the caller's token balance to that address. If the caller has no balance, the NoBalance error is thrown. If the token withdrawal fails for some reason, the WithdrawalFailed error is thrown. If the withdrawal succeeds, the token balance is added to the caller's balancio mapping, and then transferred to the recipient address.
