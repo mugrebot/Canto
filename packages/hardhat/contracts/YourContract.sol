@@ -1,78 +1,91 @@
-//SPDX-License-Identifier: MIT
-pragma solidity >=0.8.0 <0.9.0;
+// SPDX-License-Identifier: MIT
+pragma solidity 0.8.19;
 
-// Useful for debugging. Remove when deploying to a live network.
-import "hardhat/console.sol";
-// Use openzeppelin to inherit battle-tested implementations (ERC20, ERC721, etc)
-// import "@openzeppelin/contracts/access/Ownable.sol";
+error ZeroAddress();
+error ZeroValue();
+error NotContract();
+error NoBalance();
+error WithdrawalFailed();
 
-/**
- * A smart contract that allows changing a state variable of the contract and tracking the changes
- * It also allows the owner to withdraw the Ether in the contract
- * @author BuidlGuidl
- */
-contract YourContract {
-
-    // State Variables
-    address public immutable owner;
-    string public greeting = "Building Unstoppable Apps!!!";
-    bool public premium = false;
-    uint256 public totalCounter = 0;
-    mapping(address => uint) public userGreetingCounter;
-
-    // Events: a way to emit log statements from smart contract that can be listened to by external parties
-    event GreetingChange(address greetingSetter, string newGreeting, bool premium, uint256 value);
-
-    // Constructor: Called once on contract deployment
-    // Check packages/hardhat/deploy/00_deploy_your_contract.ts
-    constructor(address _owner) {
-        owner = _owner;
-    }
-
-    // Modifier: used to define a set of rules that must be met before or after a function is executed
-    // Check the withdraw() function
-    modifier isOwner() {
-        // msg.sender: predefined variable that represents address of the account that called the current function
-        require(msg.sender == owner, "Not the Owner");
-        _;
-    }
-
-    /**
-     * Function that allows anyone to change the state variable "greeting" of the contract and increase the counters
-     *
-     * @param _newGreeting (string memory) - new greeting to save on the contract
-     */
-    function setGreeting(string memory _newGreeting) public payable {
-        // Print data to the hardhat chain console. Remove when deploying to a live network.
-        console.log("Setting new greeting '%s' from %s",  _newGreeting, msg.sender);
-
-        // Change state variables
-        greeting = _newGreeting;
-        totalCounter += 1;
-        userGreetingCounter[msg.sender] += 1;
-
-        // msg.value: built-in global variable that represents the amount of ether sent with the transaction
-        if (msg.value > 0) {
-            premium = true;
-        } else {
-            premium = false;
-        }
-
-        // emit: keyword used to trigger an event
-        emit GreetingChange(msg.sender, _newGreeting, msg.value > 0, 0);
-    }
-
-    /**
-     * Function that allows the owner to withdraw all the Ether in the contract
-     * The function can only be called by the owner of the contract as defined by the isOwner modifier
-     */
-    function withdraw() isOwner public {
-        (bool success,) = owner.call{value: address(this).balance}("");
-        require(success, "Failed to send Ether");
-    }
-
-    /**
-     * Function that allows the contract to receive ETH
-     */
-    receive() external payable {}
+interface ITurnstile {
+    function register(address) external returns(uint256);
+    function getTokenId(address _smartContract) external view returns (uint256);
+    function balances(uint256 _tokenId) external view returns (uint256);
+    function balanceOf(address owner) external view returns (uint256);
+    function withdraw(uint256 _tokenId, address payable _recipient, uint256 _amount) external returns (uint256);
 }
+
+contract MyContract {
+    event PayContract(address indexed sender, uint256 value);
+
+    ITurnstile public immutable turnstile;
+
+    mapping (address => uint256) balancio;
+    
+    constructor(address _turnstile) {
+        if (_turnstile == address(0)) {
+            revert ZeroAddress();
+        }
+        turnstile = ITurnstile(_turnstile);
+        turnstile.register(address(this));
+    }
+
+    function getCsrAddress() external view returns (address) {
+        return address(turnstile);
+    }
+
+    receive() external payable {
+        if (msg.value == 0) {
+            revert ZeroValue();
+        }
+        emit PayContract(msg.sender, msg.value);
+    }
+
+    function myFunction(address _contractAddress) external view returns (uint256) {
+        if (_contractAddress == address(0)) {
+            revert ZeroAddress();
+        }
+        //check if address is a contract
+        uint256 size;
+        assembly { size := extcodesize(_contractAddress) }
+        if (size == 0) {
+            revert NotContract();
+        }
+        uint256 tokenId = turnstile.getTokenId(_contractAddress);
+        uint256 balance = turnstile.balances(tokenId);
+        return balance;
+    }
+
+    function viewTurnstile() external view returns (uint256, uint256, address) {
+uint256 tokenId = turnstile.getTokenId(address(this));
+uint256 balance = turnstile.balances(tokenId);
+address theContract = address(this);
+
+return (tokenId, balance, theContract);
+    }
+
+function viewBalancio () public view returns (uint256) {
+    return balancio[msg.sender];
+}
+
+
+function withdrawtoUser(address payable _user) external {
+
+uint256 tokenId = turnstile.getTokenId(address(this));
+uint256 balance = turnstile.balances(tokenId);
+
+
+
+balancio[msg.sender] += turnstile.withdraw(tokenId, payable(address(this)), balance);
+
+if (balancio[msg.sender] == 0) {
+    revert NoBalance();
+    }
+if (balancio[msg.sender] > 0) {
+    _user.transfer(balancio[msg.sender]);
+    balancio[msg.sender] = 0;
+    }
+}
+
+}
+
