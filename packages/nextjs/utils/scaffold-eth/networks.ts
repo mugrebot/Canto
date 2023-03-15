@@ -13,6 +13,9 @@ export const NETWORKS_EXTRA_DATA: Record<string, TChainAttributes> = {
   [chains.mainnet.id]: {
     color: "#ff8b9e",
   },
+  [chains.canto.id]: {
+    color: "#ff4b55",
+  },
   [chains.sepolia.id]: {
     color: ["#5f4bb6", "#87ff65"],
   },

@@ -67,7 +67,11 @@ const config: HardhatUserConfig = {
       url: `https://polygon-mumbai.g.alchemy.com/v2/${providerApiKey}`,
       accounts: [deployerPrivateKey],
     },
+    canto: {
+      url: "https://canto.slingshot.finance",
+      accounts: [deployerPrivateKey],
   },
+},
   verify: {
     etherscan: {
       apiKey: `${etherscanApiKey}`,
